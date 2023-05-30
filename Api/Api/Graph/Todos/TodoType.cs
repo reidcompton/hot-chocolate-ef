@@ -4,6 +4,7 @@ using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Net;
+using static Api.Graph.Users.UserDataLoaders;
 
 namespace Api.Graph.Todos
 {
@@ -24,10 +25,9 @@ namespace Api.Graph.Todos
         {
             public static async Task<User?> GetUser(
                 [Parent] Todo todo,
-                [Service] DataAccessServiceFactory<UserService> userService)
+                UserBatchDataLoader userDataLoader)
             {
-                await using var service = userService.Create();
-                return await service.GetAsync(todo.UserId);
+                return await userDataLoader.LoadAsync(todo.UserId);
             }
         }
     }

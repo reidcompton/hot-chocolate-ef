@@ -11,5 +11,15 @@ namespace Api.Services
         {
             return _db.Todos.Where(x => x.UserId == userId);
         }
+
+        public IEnumerable<Todo> GetTodoByIds(IReadOnlyList<int> keys)
+        {
+            return _db.Todos.Where(x => keys.Contains(x.Id));
+        }
+
+        public IEnumerable<Todo> GetTodosByUserId(IReadOnlyList<int> userIds)
+        {
+            return _db.Todos.Where(x => userIds.Contains(x.UserId));
+        }
     }
 }

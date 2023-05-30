@@ -43,7 +43,7 @@ namespace Api.Migrations
                     b.Property<DateTime>("ModifyDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -82,9 +82,13 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Api.Data.Todo", b =>
                 {
-                    b.HasOne("Api.Data.User", null)
+                    b.HasOne("Api.Data.User", "User")
                         .WithMany("Todos")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Api.Data.User", b =>

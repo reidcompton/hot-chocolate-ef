@@ -7,6 +7,7 @@ namespace Api.Graph.Todos
     public class TodoQueries
     {
         [UsePaging(MaxPageSize = int.MaxValue)]
+        [UseFiltering]
         public async Task<IQueryable<Todo>> GetTodosAsync(
             [ID(nameof(User))] int userId,
             [Service] DataAccessServiceFactory<TodoService> todoService)
@@ -23,7 +24,6 @@ namespace Api.Graph.Todos
             await using var service = todoService.Create();
             var todo = await service.GetAsync(id);
             return todo;
-            //return await context.Todos.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
     }
 }

@@ -4,6 +4,8 @@ using Api.Graph.Todos;
 using Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using static Api.Graph.Todos.TodoDataLoaders;
+using static Api.Graph.Users.UserDataLoaders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +19,11 @@ builder.Services.AddGraphQLServer()
                 .RegisterDbContext<ApplicationDbContext>(DbContextKind.Pooled)
                 .AddQueryType<Query>()
                 .AddTypeExtension<TodoQueries>()
-                .AddType<TodoType>();
+                .AddType<TodoType>()
+                .AddDataLoader<TodoByUserIdDataLoader>()
+                .AddDataLoader<UserBatchDataLoader>()
+                .AddFiltering();
+
 
 builder.Services.AddTransient<DataAccessServiceFactory<TodoService>>();
 builder.Services.AddTransient<DataAccessServiceFactory<UserService>>();
@@ -40,8 +46,45 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-    db.CreateDbContext().Database.Migrate();
+    var dbService = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+    var db = dbService.CreateDbContext();
+    if (db.Database.GetPendingMigrations().Any())
+    {
+        db.Database.Migrate();
+    }
+    if (!db.Users.Any())
+    {
+        db.Users.AddRange(new List<User>
+        {
+            new User {
+                FirstName = "foo",
+                LastName = "bar",
+                Todos = new List<Todo>
+                {
+                    new Todo { IsDone = true, Description = "this is a todo"},
+                    new Todo { IsDone = true, Description = "this is a todo"},
+                    new Todo { IsDone = true, Description = "this is a todo"},
+                    new Todo { IsDone = false, Description = "this is a todo"},
+                    new Todo { IsDone = false, Description = "this is a todo"},
+                    new Todo { IsDone = false, Description = "this is a todo"}
+                }
+            },
+            new User {
+                FirstName = "baz",
+                LastName = "bat",
+                Todos = new List<Todo>
+                {
+                    new Todo { IsDone = true, Description = "this is a todo"},
+                    new Todo { IsDone = true, Description = "this is a todo"},
+                    new Todo { IsDone = true, Description = "this is a todo"},
+                    new Todo { IsDone = false, Description = "this is a todo"},
+                    new Todo { IsDone = false, Description = "this is a todo"},
+                    new Todo { IsDone = false, Description = "this is a todo"}
+                }
+            } 
+        });
+        db.SaveChanges();
+    }
 }
 
 app.MapGraphQL();
