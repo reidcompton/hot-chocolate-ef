@@ -6,7 +6,7 @@ namespace Api.Graph.Todos
     [ExtendObjectType(typeof(Query))]
     public class TodoQueries
     {
-        [UsePaging(MaxPageSize = int.MaxValue)]
+        [UsePaging]
         [UseFiltering]
         public async Task<IQueryable<Todo>> GetTodosAsync(
             [ID(nameof(User))] int userId,
